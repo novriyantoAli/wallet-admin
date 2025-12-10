@@ -15,8 +15,8 @@
 		name: '',
 		description: '',
 		price: '',
-		sku: '',
-		stock: ''
+		stock: '',
+		category: ''
 	});
 
 	// Load products from API
@@ -47,7 +47,7 @@
 	function handleAddClick() {
 		showAddForm = true;
 		editingId = null;
-		formData = { name: '', description: '', price: '', sku: '', stock: '' };
+		formData = { name: '', description: '', price: '', stock: '', category: '' };
 	}
 
 	function handleEditClick(product) {
@@ -56,15 +56,20 @@
 			name: product.name,
 			description: product.description,
 			price: product.price,
-			sku: product.sku,
 			stock: product.stock
 		};
 		showAddForm = true;
 	}
 
 	async function handleSubmit() {
-		if (!formData.name || !formData.sku || !formData.price || formData.stock === '') {
+		if (!formData.name || !formData.price || formData.stock === '') {
 			alert('Please fill in all required fields');
+			return;
+		}
+
+		// Validate category only for create (when editingId is null)
+		if (!editingId && !formData.category) {
+			alert('Please select a category');
 			return;
 		}
 
@@ -76,9 +81,13 @@
 				name: formData.name,
 				description: formData.description,
 				price: parseFloat(formData.price),
-				sku: formData.sku,
 				stock: parseInt(formData.stock)
 			};
+
+			// Only add category to payload when creating
+			if (!editingId) {
+				productPayload.category = formData.category;
+			}
 
 			let response;
 			if (editingId) {
@@ -94,7 +103,7 @@
 			// Reload products
 			await loadProducts();
 			showAddForm = false;
-			formData = { name: '', description: '', price: '', sku: '', stock: '' };
+			formData = { name: '', description: '', price: '', stock: '', category: '' };
 		} catch (err) {
 			alert(`Error ${editingId ? 'updating' : 'creating'} product: ${err.message}`);
 			console.error('Error:', err);
@@ -201,17 +210,6 @@
 						/>
 					</div>
 					<div>
-						<label for="sku" class="block text-gray-300 text-sm font-medium mb-2">SKU</label>
-						<input
-							id="sku"
-							type="text"
-							bind:value={formData.sku}
-							required
-							class="w-full bg-gray-700 border border-gray-600 rounded px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
-							placeholder="e.g., PWL-001"
-						/>
-					</div>
-					<div>
 						<label for="price" class="block text-gray-300 text-sm font-medium mb-2">Price</label>
 						<input
 							id="price"
@@ -235,6 +233,24 @@
 						/>
 					</div>
 				</div>
+
+				<!-- Category field - only show for create -->
+				{#if !editingId}
+					<div>
+						<label for="category" class="block text-gray-300 text-sm font-medium mb-2">Category</label>
+						<select
+							id="category"
+							bind:value={formData.category}
+							required
+							class="w-full bg-gray-700 border border-gray-600 rounded px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+						>
+							<option value="">Select a category</option>
+							<option value="wifi">WiFi</option>
+							<option value="pulsa">Pulsa</option>
+						</select>
+					</div>
+				{/if}
+
 				<div>
 					<label for="description" class="block text-gray-300 text-sm font-medium mb-2">Description</label>
 					<textarea
@@ -290,10 +306,11 @@
 		<!-- Products Table -->
 		<div class="bg-gray-800 rounded-lg overflow-hidden border border-gray-700">
 			<div class="overflow-x-auto">
-				<table class="w-full">
+					<table class="w-full">
 					<thead class="bg-gray-700 border-b border-gray-600">
 						<tr>
 							<th class="px-6 py-4 text-left text-sm font-semibold text-gray-200">Product Name</th>
+							<th class="px-6 py-4 text-left text-sm font-semibold text-gray-200">Category</th>
 							<th class="px-6 py-4 text-left text-sm font-semibold text-gray-200">SKU</th>
 							<th class="px-6 py-4 text-left text-sm font-semibold text-gray-200">Price</th>
 							<th class="px-6 py-4 text-left text-sm font-semibold text-gray-200">Stock</th>
@@ -307,6 +324,9 @@
 						{#each products as product (product.id)}
 							<tr class="hover:bg-gray-750 transition-colors duration-150">
 								<td class="px-6 py-4 text-sm text-white font-medium">{product.name}</td>
+								<td class="px-6 py-4 text-sm text-gray-300">
+									<span class="px-2 py-1 rounded text-xs font-medium bg-blue-900 text-blue-200">{product.category || '-'}</span>
+								</td>
 								<td class="px-6 py-4 text-sm text-gray-300 font-mono">{product.sku}</td>
 								<td class="px-6 py-4 text-sm text-white font-medium">${product.price.toFixed(2)}</td>
 								<td class="px-6 py-4 text-sm text-white">{product.stock}</td>
