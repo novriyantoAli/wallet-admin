@@ -54,3 +54,15 @@ export const deleteProduct = async (id, token) => {
         },
     })
 }
+
+export const updateProductStatus = async (id, status, token) => {
+    return fetch(`${import.meta.env.VITE_URL_API}/products/${id}/status`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status })
+    })
+}

@@ -1,5 +1,5 @@
 <script>
-	import { getProducts, createProduct, updateProduct, deleteProduct } from '$lib/api/ProductApi';
+	import { getProducts, createProduct, updateProduct, deleteProduct, updateProductStatus } from '$lib/api/ProductApi';
 
 	/** @type {import('./$types').PageProps} */
 	let { data } = $props();
@@ -11,12 +11,14 @@
 	let showAddForm = $state(false);
 	let editingId = $state(null);
 	let isSubmitting = $state(false);
+	let updatingStatusId = $state(null);
 	let formData = $state({
 		name: '',
 		description: '',
 		price: '',
 		stock: '',
-		category: ''
+		category: '',
+		status: ''
 	});
 
 	// Load products from API
@@ -56,7 +58,9 @@
 			name: product.name,
 			description: product.description,
 			price: product.price,
-			stock: product.stock
+			stock: product.stock,
+			category: '',
+			status: product.status || 'active'
 		};
 		showAddForm = true;
 	}
@@ -89,6 +93,11 @@
 				productPayload.category = formData.category;
 			}
 
+			// Only add status to payload when updating
+			if (editingId) {
+				productPayload.status = formData.status;
+			}
+
 			let response;
 			if (editingId) {
 				response = await updateProduct(editingId, productPayload, token);
@@ -103,12 +112,41 @@
 			// Reload products
 			await loadProducts();
 			showAddForm = false;
-			formData = { name: '', description: '', price: '', stock: '', category: '' };
+			formData = { name: '', description: '', price: '', stock: '', category: '', status: '' };
 		} catch (err) {
 			alert(`Error ${editingId ? 'updating' : 'creating'} product: ${err.message}`);
 			console.error('Error:', err);
 		} finally {
 			isSubmitting = false;
+		}
+	}
+
+	async function handleStatusToggle(product) {
+		// Determine the new status
+		const statusOptions = ['active', 'inactive'];
+		const currentIndex = statusOptions.indexOf(product.status?.toLowerCase());
+		const nextStatus = statusOptions[(currentIndex + 1) % statusOptions.length];
+
+		const token = localStorage.getItem('token') || '';
+		updatingStatusId = product.id;
+		
+		try {
+			const response = await updateProductStatus(product.id, nextStatus, token);
+			
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			
+			// Update the product status in the local state
+			const index = products.findIndex(p => p.id === product.id);
+			if (index !== -1) {
+				products[index].status = nextStatus;
+			}
+		} catch (err) {
+			alert(`Error updating product status: ${err.message}`);
+			console.error('Error:', err);
+		} finally {
+			updatingStatusId = null;
 		}
 	}
 
@@ -130,22 +168,20 @@
 		}
 	}
 
-	function getStatus(stock) {
+	function getStockStatus(stock) {
 		if (stock === 0) return 'Out of Stock';
 		if (stock < 20) return 'Low Stock';
-		return 'Active';
+		return 'In Stock';
 	}
 
-	function getStatusColor(status) {
-		switch (status) {
-			case 'Active':
-				return 'bg-green-100 text-green-800';
-			case 'Low Stock':
-				return 'bg-yellow-100 text-yellow-800';
-			case 'Out of Stock':
-				return 'bg-red-100 text-red-800';
+	function getProductStatusColor(status) {
+		switch (status?.toLowerCase()) {
+			case 'active':
+				return 'bg-green-900 text-green-200';
+			case 'inactive':
+				return 'bg-yellow-900 text-yellow-200';
 			default:
-				return 'bg-gray-100 text-gray-800';
+				return 'bg-gray-700 text-gray-300';
 		}
 	}
 
@@ -251,6 +287,21 @@
 					</div>
 				{/if}
 
+				<!-- Status field - only show for update -->
+				{#if editingId}
+					<div>
+						<label for="status" class="block text-gray-300 text-sm font-medium mb-2">Status</label>
+						<select
+							id="status"
+							bind:value={formData.status}
+							class="w-full bg-gray-700 border border-gray-600 rounded px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+						>
+							<option value="active">Active</option>
+							<option value="inactive">Inactive</option>
+						</select>
+					</div>
+				{/if}
+
 				<div>
 					<label for="description" class="block text-gray-300 text-sm font-medium mb-2">Description</label>
 					<textarea
@@ -329,12 +380,21 @@
 								</td>
 								<td class="px-6 py-4 text-sm text-gray-300 font-mono">{product.sku}</td>
 								<td class="px-6 py-4 text-sm text-white font-medium">${product.price.toFixed(2)}</td>
-								<td class="px-6 py-4 text-sm text-white">{product.stock}</td>
-								<td class="px-6 py-4 text-sm">
-									<span class="px-3 py-1 rounded-full text-xs font-medium {getStatusColor(getStatus(product.stock))}">
-										{getStatus(product.stock)}
-									</span>
-								</td>
+							<td class="px-6 py-4 text-sm text-white">{product.stock}</td>
+							<td class="px-6 py-4 text-sm">
+								<button
+									onclick={() => handleStatusToggle(product)}
+									disabled={updatingStatusId === product.id}
+									class="px-3 py-1 rounded text-xs font-medium transition-all duration-200 {getProductStatusColor(product.status)} {updatingStatusId === product.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}"
+									title="Click to toggle status"
+								>
+									{#if updatingStatusId === product.id}
+										<i class="fas fa-spinner fa-spin"></i>
+									{:else}
+										{product.status ? product.status.charAt(0).toUpperCase() + product.status.slice(1) : '-'}
+									{/if}
+								</button>
+							</td>
 								<td class="px-6 py-4 text-sm text-gray-400">{formatDate(product.created_at)}</td>
 								<td class="px-6 py-4 text-sm text-gray-400">{formatDate(product.updated_at)}</td>
 								<td class="px-6 py-4 text-sm">
