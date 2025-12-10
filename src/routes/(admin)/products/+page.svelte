@@ -1,4 +1,5 @@
 <script>
+	import { goto } from '$app/navigation';
 	import { getProducts, createProduct, updateProduct, deleteProduct, updateProductStatus } from '$lib/api/ProductApi';
 
 	/** @type {import('./$types').PageProps} */
@@ -397,24 +398,31 @@
 							</td>
 								<td class="px-6 py-4 text-sm text-gray-400">{formatDate(product.created_at)}</td>
 								<td class="px-6 py-4 text-sm text-gray-400">{formatDate(product.updated_at)}</td>
-								<td class="px-6 py-4 text-sm">
-									<div class="flex gap-2">
-										<button
-											onclick={() => handleEditClick(product)}
-											class="text-blue-400 hover:text-blue-300 transition-colors"
-											title="Edit product"
-										>
-											<i class="fas fa-edit"></i>
-										</button>
-										<button
-											onclick={() => handleDelete(product.id)}
-											class="text-red-400 hover:text-red-300 transition-colors"
-											title="Delete product"
-										>
-											<i class="fas fa-trash"></i>
-										</button>
-									</div>
-								</td>
+							<td class="px-6 py-4 text-sm">
+								<div class="flex gap-2">
+									<button
+										onclick={() => goto(`/products/${product.id}`)}
+										class="text-green-400 hover:text-green-300 transition-colors"
+										title="View details"
+									>
+										<i class="fas fa-eye"></i>
+									</button>
+									<button
+										onclick={() => handleEditClick(product)}
+										class="text-blue-400 hover:text-blue-300 transition-colors"
+										title="Edit product"
+									>
+										<i class="fas fa-edit"></i>
+									</button>
+									<button
+										onclick={() => handleDelete(product.id)}
+										class="text-red-400 hover:text-red-300 transition-colors"
+										title="Delete product"
+									>
+										<i class="fas fa-trash"></i>
+									</button>
+								</div>
+							</td>
 							</tr>
 						{/each}
 					</tbody>

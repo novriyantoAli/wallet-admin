@@ -66,3 +66,28 @@ export const updateProductStatus = async (id, status, token) => {
         body: JSON.stringify({ status })
     })
 }
+
+
+// product wifi api
+export const getProductWifiByProductId = async (productId, token) => {
+    return fetch(`${import.meta.env.VITE_URL_API}/products/wifi/product/${productId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+        },
+    })
+}
+
+export const updateProductWifi = async (productId, wifiData, token) => {
+    return fetch(`${import.meta.env.VITE_URL_API}/products/wifi/product/${productId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(wifiData)
+    })
+}
