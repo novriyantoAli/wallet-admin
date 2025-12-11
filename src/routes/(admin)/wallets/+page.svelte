@@ -116,7 +116,9 @@
 					<thead class="bg-gray-700 border-b border-gray-600">
 						<tr>
 							<th class="px-6 py-4 text-left text-sm font-semibold text-gray-200">Wallet ID</th>
-							<th class="px-6 py-4 text-left text-sm font-semibold text-gray-200">User ID</th>
+							<th class="px-6 py-4 text-left text-sm font-semibold text-gray-200">User Name</th>
+							<th class="px-6 py-4 text-left text-sm font-semibold text-gray-200">User Email</th>
+							<th class="px-6 py-4 text-left text-sm font-semibold text-gray-200">User Level</th>
 							<th class="px-6 py-4 text-left text-sm font-semibold text-gray-200">Balance</th>
 							<th class="px-6 py-4 text-left text-sm font-semibold text-gray-200">Status</th>
 							<th class="px-6 py-4 text-left text-sm font-semibold text-gray-200">Created</th>
@@ -127,7 +129,17 @@
 						{#each wallets as wallet (wallet.id)}
 							<tr class="hover:bg-gray-750 transition-colors duration-150">
 								<td class="px-6 py-4 text-sm text-white font-medium">{wallet.id}</td>
-								<td class="px-6 py-4 text-sm text-gray-300">{wallet.user_id}</td>
+								<td class="px-6 py-4 text-sm text-gray-300">{wallet.user?.name || wallet.user_name || 'N/A'}</td>
+								<td class="px-6 py-4 text-sm text-gray-300">{wallet.user?.email || wallet.user_email || 'N/A'}</td>
+								<td class="px-6 py-4 text-sm">
+									<span class="px-3 py-1 rounded-full text-xs font-medium {wallet.user?.level === 'premium'
+										? 'bg-purple-900 text-purple-200'
+										: wallet.user?.level === 'gold'
+											? 'bg-yellow-900 text-yellow-200'
+											: 'bg-gray-900 text-gray-200'}">
+										{wallet.user?.level || wallet.user_level || 'standard'}
+									</span>
+								</td>
 								<td class="px-6 py-4 text-sm font-semibold text-green-400">{formatCurrency(wallet.balance || 0)}</td>
 								<td class="px-6 py-4 text-sm">
 									<span class="px-3 py-1 rounded-full text-xs font-medium {wallet.status?.toLowerCase() === 'active'
