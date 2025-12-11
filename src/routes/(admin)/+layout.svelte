@@ -28,6 +28,13 @@
                         </a>
                     </li>
                     <li>
+                        <a href="/wallets"
+                           class="text-gray-100 hover:text-white flex items-center transition-colors duration-200">
+                            <i class="fas fa-wallet mr-2"></i>
+                            <span>Wallets</span>
+                        </a>
+                    </li>
+                    <li>
                         <a href="/users/profile"
                            class="text-gray-100 hover:text-white flex items-center transition-colors duration-200">
                             <i class="fas fa-user-circle mr-2"></i>
