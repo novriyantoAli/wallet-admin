@@ -28,9 +28,9 @@
 	});
 
 	let wifiEditForm = $state({
-		quota: '',
-		duration: '',
-		speed_limit: '',
+		quota: 0,
+		duration: 0,
+		speed_limit: 0,
 	});
 
     let productWifi = $derived.by( async() => {
@@ -170,20 +170,16 @@
 			const wifiData = typeof productWifi === 'function' ? null : productWifi;
 			if (wifiData) {
 				wifiEditForm = {
-					quota: wifiData.quota || '',
-					duration: wifiData.duration || '',
-					speed_limit: wifiData.speed_limit || ''
+					quota: wifiData.quota || 0,
+					duration: wifiData.duration || 0,
+					speed_limit: wifiData.speed_limit || 0
 				};
 			}
 		}
 	}
 
 	async function handleWifiSave() {
-		if (!wifiEditForm.quota && !wifiEditForm.duration && !wifiEditForm.speed_limit) {
-			alert('Please fill in at least one field');
-			return;
-		}
-
+		// Allow saving with any values including 0
 		isSavingWifi = true;
 		try {
 			const token = localStorage.getItem('token') || '';
@@ -216,9 +212,9 @@
 		isEditingWifi = false;
 		// Reset form
 		wifiEditForm = {
-			quota: '',
-			duration: '',
-			speed_limit: ''
+			quota: 0,
+			duration: 0,
+			speed_limit: 0
 		};
 	}
 

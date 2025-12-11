@@ -81,7 +81,7 @@ export const getProductWifiByProductId = async (productId, token) => {
 }
 
 export const updateProductWifi = async (productId, wifiData, token) => {
-    return fetch(`${import.meta.env.VITE_URL_API}/products/wifi/product/${productId}`, {
+    return fetch(`${import.meta.env.VITE_URL_API}/products/wifi/${productId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
