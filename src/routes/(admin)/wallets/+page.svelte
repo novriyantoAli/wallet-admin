@@ -1,12 +1,20 @@
 <script>
 	import { goto } from '$app/navigation';
-	import { getWallets, deleteWallet } from '$lib/api/WalletApi';
+	import { getWallets, deleteWallet, updateWalletBalance } from '$lib/api/WalletApi';
 
 	let { data } = $props();
 
 	let wallets = $state([]);
 	let loading = $state(true);
 	let error = $state(null);
+	let showTransactionModal = $state(false);
+	let selectedWalletId = $state(null);
+	let transactionLoading = $state(false);
+	let transactionForm = $state({
+		amount: '',
+		description: '',
+		transaction_type: 'credit'
+	});
 
 	// Load wallets from API
 	async function loadWallets() {
@@ -47,6 +55,64 @@
 				alert(`Error deleting wallet: ${err.message}`);
 				console.error('Error:', err);
 			}
+		}
+	}
+
+	function openTransactionModal(walletId) {
+		selectedWalletId = walletId;
+		showTransactionModal = true;
+		transactionForm = {
+			amount: '',
+			description: '',
+			transaction_type: 'credit'
+		};
+	}
+
+	function closeTransactionModal() {
+		showTransactionModal = false;
+		selectedWalletId = null;
+		transactionForm = {
+			amount: '',
+			description: '',
+			transaction_type: 'credit'
+		};
+	}
+
+	async function handleTransaction() {
+		if (!transactionForm.amount || transactionForm.amount <= 0) {
+			alert('Please enter a valid amount');
+			return;
+		}
+
+		if (!transactionForm.transaction_type) {
+			alert('Please select transaction type');
+			return;
+		}
+
+		transactionLoading = true;
+		try {
+			const token = localStorage.getItem('token') || '';
+
+			const payload = {
+				amount: parseFloat(transactionForm.amount),
+				description: transactionForm.description || '',
+				transaction_type: transactionForm.transaction_type
+			};
+
+			const response = await updateWalletBalance(selectedWalletId, payload, token);
+
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			alert('Transaction completed successfully');
+			closeTransactionModal();
+			await loadWallets();
+		} catch (err) {
+			alert(`Error processing transaction: ${err.message}`);
+			console.error('Error:', err);
+		} finally {
+			transactionLoading = false;
 		}
 	}
 
@@ -159,6 +225,13 @@
 											<i class="fas fa-eye"></i>
 										</button>
 										<button
+											onclick={() => openTransactionModal(wallet.id)}
+											class="text-yellow-400 hover:text-yellow-300 transition-colors"
+											title="Add transaction"
+										>
+											<i class="fas fa-exchange-alt"></i>
+										</button>
+										<button
 											onclick={() => goto(`/wallets/${wallet.id}/edit`)}
 											class="text-blue-400 hover:text-blue-300 transition-colors"
 											title="Edit wallet"
@@ -182,6 +255,85 @@
 		</div>
 	{/if}
 </div>
+
+<!-- Transaction Modal -->
+{#if showTransactionModal}
+	<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+		<div class="bg-gray-800 rounded-lg p-8 border border-gray-700 max-w-md w-full mx-4">
+			<h2 class="text-2xl font-bold text-white mb-6">Add Transaction</h2>
+
+			<div class="space-y-4">
+				<!-- Transaction Type -->
+				<div>
+					<label for="transaction_type" class="block text-gray-300 text-sm font-medium mb-2">
+						Transaction Type
+					</label>
+					<select
+						id="transaction_type"
+						bind:value={transactionForm.transaction_type}
+						class="w-full bg-gray-700 border border-gray-600 rounded px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+					>
+						<option value="credit">Credit</option>
+						<option value="debit">Debit</option>
+					</select>
+				</div>
+
+				<!-- Amount -->
+				<div>
+					<label for="amount" class="block text-gray-300 text-sm font-medium mb-2">Amount</label>
+					<input
+						id="amount"
+						type="number"
+						bind:value={transactionForm.amount}
+						step="0.01"
+						placeholder="0.00"
+						class="w-full bg-gray-700 border border-gray-600 rounded px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+						required
+					/>
+				</div>
+
+				<!-- Description -->
+				<div>
+					<label for="description" class="block text-gray-300 text-sm font-medium mb-2">
+						Description (Optional)
+					</label>
+					<textarea
+						id="description"
+						bind:value={transactionForm.description}
+						placeholder="Enter transaction description..."
+						rows="3"
+						class="w-full bg-gray-700 border border-gray-600 rounded px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+					></textarea>
+				</div>
+			</div>
+
+			<!-- Modal Actions -->
+			<div class="flex gap-3 mt-8">
+				<button
+					onclick={handleTransaction}
+					disabled={transactionLoading}
+					class="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors {transactionLoading && 'opacity-50 cursor-not-allowed'}"
+				>
+					{#if transactionLoading}
+						<i class="fas fa-spinner fa-spin mr-2"></i>
+						Processing...
+					{:else}
+						<i class="fas fa-check mr-2"></i>
+						Confirm
+					{/if}
+				</button>
+				<button
+					onclick={closeTransactionModal}
+					disabled={transactionLoading}
+					class="flex-1 px-4 py-3 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg font-medium transition-colors {transactionLoading && 'opacity-50 cursor-not-allowed'}"
+				>
+					<i class="fas fa-times mr-2"></i>
+					Cancel
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
 
 <style>
 	:global(.hover\:bg-gray-750:hover) {

@@ -35,6 +35,20 @@
                         </a>
                     </li>
                     <li>
+                        <a href="/purchases"
+                           class="text-gray-100 hover:text-white flex items-center transition-colors duration-200">
+                            <i class="fas fa-shopping-cart mr-2"></i>
+                            <span>Purchases</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/users"
+                           class="text-gray-100 hover:text-white flex items-center transition-colors duration-200">
+                            <i class="fas fa-users mr-2"></i>
+                            <span>Users</span>
+                        </a>
+                    </li>
+                    <li>
                         <a href="/users/profile"
                            class="text-gray-100 hover:text-white flex items-center transition-colors duration-200">
                             <i class="fas fa-user-circle mr-2"></i>

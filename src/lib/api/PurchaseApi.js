@@ -1,5 +1,5 @@
-export const getWallets = async (token) => {
-    return fetch(`${import.meta.env.VITE_URL_API}/wallets`, {
+export const getPurchases = async (token) => {
+    return fetch(`${import.meta.env.VITE_URL_API}/purchases/details`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -9,8 +9,8 @@ export const getWallets = async (token) => {
     })
 }
 
-export const getWalletById = async (id, token) => {
-    return fetch(`${import.meta.env.VITE_URL_API}/wallets/${id}`, {
+export const getPurchaseById = async (id, token) => {
+    return fetch(`${import.meta.env.VITE_URL_API}/purchases/${id}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -20,32 +20,32 @@ export const getWalletById = async (id, token) => {
     })
 }
 
-export const createWallet = async (walletData, token) => {
-    return fetch(`${import.meta.env.VITE_URL_API}/wallets`, {
+export const createPurchase = async (purchaseData, token) => {
+    return fetch(`${import.meta.env.VITE_URL_API}/purchases`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify(walletData)
+        body: JSON.stringify(purchaseData)
     })
 }
 
-export const updateWallet = async (id, walletData, token) => {
-    return fetch(`${import.meta.env.VITE_URL_API}/wallets/${id}`, {
+export const updatePurchase = async (id, purchaseData, token) => {
+    return fetch(`${import.meta.env.VITE_URL_API}/purchases/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify(walletData)
+        body: JSON.stringify(purchaseData)
     })
 }
 
-export const deleteWallet = async (id, token) => {
-    return fetch(`${import.meta.env.VITE_URL_API}/wallets/${id}`, {
+export const deletePurchase = async (id, token) => {
+    return fetch(`${import.meta.env.VITE_URL_API}/purchases/${id}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -55,14 +55,14 @@ export const deleteWallet = async (id, token) => {
     })
 }
 
-export const updateWalletBalance = async (id, transactionData, token) => {
-    return fetch(`${import.meta.env.VITE_URL_API}/wallets/${id}/balance`, {
-        method: 'POST',
+export const updatePurchaseStatus = async (id, status, token) => {
+    return fetch(`${import.meta.env.VITE_URL_API}/purchases/${id}/status`, {
+        method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify(transactionData)
+        body: JSON.stringify({ status })
     })
 }
